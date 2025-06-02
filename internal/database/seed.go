@@ -1,0 +1,631 @@
+package database
+
+import (
+	"log"
+	"spotlight-backend-go/internal/models"
+	"time"
+
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/datatypes"
+)
+
+func SeedData() {
+	// Check if data already exists
+	var count int64
+	DB.Model(&models.User{}).Count(&count)
+	if count > 0 {
+		log.Println("Database already seeded, skipping...")
+		return
+	}
+
+	// Create sample users - Influencers
+	influencers := []models.User{
+		{
+			ID:              "1",
+			Name:            "Rahul Sharma",
+			Username:        "rahul_sharma",
+			Email:           "rahul.sharma@example.com",
+			Password:        hashPassword("password123"),
+			AvatarURL:       "https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul",
+			Bio:             "Tech entrepreneur and startup mentor",
+			Role:            models.RoleInfluencer,
+			WalletBalance:   5000.0,
+			MediaGallery:    datatypes.JSON([]byte("[]")),
+			CoverPhotoURL:   "https://api.dicebear.com/7.x/avataaars/svg?seed=RahulCover",
+			FollowerCount:   50000,
+			InstagramHandle: "@rahulsharma",
+			Verified:        true,
+			Age:             28,
+			Gender:          "male",
+			Height:          178,
+			Work:            "Tech Entrepreneur",
+			Education:       "Master's in Computer Science",
+			EducationLevel:  "masters",
+			Drinking:        "social",
+			Location:        "Bangalore, India",
+			MobileNumber:    "7709606629",
+			CreatedAt:       time.Now(),
+			UpdatedAt:       time.Now(),
+		},
+		{
+			ID:              "2",
+			Name:            "Priya Patel",
+			Username:        "priya_patel",
+			Email:           "priya.patel@example.com",
+			Password:        hashPassword("password123"),
+			AvatarURL:       "https://api.dicebear.com/7.x/avataaars/svg?seed=Priya",
+			Bio:             "Fashion influencer and lifestyle blogger",
+			Role:            models.RoleInfluencer,
+			WalletBalance:   4500.0,
+			MediaGallery:    datatypes.JSON([]byte("[]")),
+			CoverPhotoURL:   "https://api.dicebear.com/7.x/avataaars/svg?seed=PriyaCover",
+			FollowerCount:   75000,
+			InstagramHandle: "@priyapatel",
+			Verified:        true,
+			Age:             25,
+			Gender:          "female",
+			Height:          165,
+			Work:            "Fashion Influencer",
+			Education:       "Bachelor's in Fashion Design",
+			EducationLevel:  "bachelors",
+			Drinking:        "rarely",
+			Location:        "Mumbai, India",
+			MobileNumber:    "123",
+			CreatedAt:       time.Now(),
+			UpdatedAt:       time.Now(),
+		},
+		{
+			ID:              "3",
+			Name:            "Arjun Singh",
+			Username:        "arjun_singh",
+			Email:           "arjun.singh@example.com",
+			Password:        hashPassword("password123"),
+			AvatarURL:       "https://api.dicebear.com/7.x/avataaars/svg?seed=Arjun",
+			Bio:             "Fitness coach and wellness expert",
+			Role:            models.RoleInfluencer,
+			WalletBalance:   3500.0,
+			MediaGallery:    datatypes.JSON([]byte("[]")),
+			CoverPhotoURL:   "https://api.dicebear.com/7.x/avataaars/svg?seed=ArjunCover",
+			FollowerCount:   30000,
+			InstagramHandle: "@arjunsingh",
+			Verified:        true,
+			Age:             32,
+			Gender:          "male",
+			Height:          183,
+			Work:            "Fitness Coach",
+			Education:       "Bachelor's in Sports Science",
+			EducationLevel:  "bachelors",
+			Drinking:        "no",
+			Location:        "Delhi, India",
+			MobileNumber:    "123",
+			CreatedAt:       time.Now(),
+			UpdatedAt:       time.Now(),
+		},
+		{
+			ID:              "4",
+			Name:            "Ananya Gupta",
+			Username:        "ananya_gupta",
+			Email:           "ananya.gupta@example.com",
+			Password:        hashPassword("password123"),
+			AvatarURL:       "https://api.dicebear.com/7.x/avataaars/svg?seed=Ananya",
+			Bio:             "Food blogger and culinary expert",
+			Role:            models.RoleInfluencer,
+			WalletBalance:   4000.0,
+			MediaGallery:    datatypes.JSON([]byte("[]")),
+			CoverPhotoURL:   "https://api.dicebear.com/7.x/avataaars/svg?seed=AnanyaCover",
+			FollowerCount:   45000,
+			InstagramHandle: "@ananyagupta",
+			Verified:        true,
+			Age:             27,
+			Gender:          "female",
+			Height:          162,
+			Work:            "Food Blogger",
+			Education:       "Master's in Culinary Arts",
+			EducationLevel:  "masters",
+			Drinking:        "social",
+			Location:        "Hyderabad, India",
+			MobileNumber:    "123",
+			CreatedAt:       time.Now(),
+			UpdatedAt:       time.Now(),
+		},
+		{
+			ID:              "5",
+			Name:            "Vikram Malhotra",
+			Username:        "vikram_malhotra",
+			Email:           "vikram.malhotra@example.com",
+			Password:        hashPassword("password123"),
+			AvatarURL:       "https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram",
+			Bio:             "Travel vlogger and adventure enthusiast",
+			Role:            models.RoleInfluencer,
+			WalletBalance:   5500.0,
+			MediaGallery:    datatypes.JSON([]byte("[]")),
+			CoverPhotoURL:   "https://api.dicebear.com/7.x/avataaars/svg?seed=VikramCover",
+			FollowerCount:   60000,
+			InstagramHandle: "@vikrammalhotra",
+			Verified:        true,
+			Age:             30,
+			Gender:          "male",
+			Height:          180,
+			Work:            "Travel Vlogger",
+			Education:       "Bachelor's in Journalism",
+			EducationLevel:  "bachelors",
+			Drinking:        "yes",
+			Location:        "Goa, India",
+			MobileNumber:    "123",
+			CreatedAt:       time.Now(),
+			UpdatedAt:       time.Now(),
+		},
+	}
+
+	// Create sample users - Fans
+	fans := []models.User{
+		{
+			ID:             "6",
+			Name:           "Riya Mehta",
+			Username:       "riya_mehta",
+			Email:          "riya.mehta@example.com",
+			Password:       hashPassword("password123"),
+			AvatarURL:      "https://api.dicebear.com/7.x/avataaars/svg?seed=Riya",
+			Bio:            "Tech enthusiast and aspiring developer",
+			Role:           models.RoleFan,
+			WalletBalance:  1000.0,
+			MediaGallery:   datatypes.JSON([]byte("[]")),
+			Age:            24,
+			Gender:         "female",
+			Height:         160,
+			Work:           "Software Developer",
+			Education:      "Bachelor's in Computer Science",
+			EducationLevel: "bachelors",
+			Drinking:       "social",
+			Location:       "Pune, India",
+			MobileNumber:   "123",
+			CreatedAt:      time.Now(),
+			UpdatedAt:      time.Now(),
+		},
+		{
+			ID:             "7",
+			Name:           "Karan Verma",
+			Username:       "karan_verma",
+			Email:          "karan.verma@example.com",
+			Password:       hashPassword("password123"),
+			AvatarURL:      "https://api.dicebear.com/7.x/avataaars/svg?seed=Karan",
+			Bio:            "Fitness enthusiast and amateur photographer",
+			Role:           models.RoleFan,
+			WalletBalance:  800.0,
+			MediaGallery:   datatypes.JSON([]byte("[]")),
+			Age:            26,
+			Gender:         "male",
+			Height:         175,
+			Work:           "Photographer",
+			Education:      "Bachelor's in Fine Arts",
+			EducationLevel: "bachelors",
+			Drinking:       "rarely",
+			Location:       "Chennai, India",
+			MobileNumber:   "123",
+			CreatedAt:      time.Now(),
+			UpdatedAt:      time.Now(),
+		},
+		{
+			ID:             "8",
+			Name:           "Neha Kapoor",
+			Username:       "neha_kapoor",
+			Email:          "neha.kapoor@example.com",
+			Password:       hashPassword("password123"),
+			AvatarURL:      "https://api.dicebear.com/7.x/avataaars/svg?seed=Neha",
+			Bio:            "Food lover and home chef",
+			Role:           models.RoleFan,
+			WalletBalance:  1200.0,
+			MediaGallery:   datatypes.JSON([]byte("[]")),
+			Age:            29,
+			Gender:         "female",
+			Height:         158,
+			Work:           "Home Chef",
+			Education:      "Master's in Culinary Arts",
+			EducationLevel: "masters",
+			Drinking:       "no",
+			Location:       "Kolkata, India",
+			MobileNumber:   "123",
+			CreatedAt:      time.Now(),
+			UpdatedAt:      time.Now(),
+		},
+		{
+			ID:             "9",
+			Name:           "Aditya Joshi",
+			Username:       "aditya_joshi",
+			Email:          "aditya.joshi@example.com",
+			Password:       hashPassword("password123"),
+			AvatarURL:      "https://api.dicebear.com/7.x/avataaars/svg?seed=Aditya",
+			Bio:            "Travel enthusiast and writer",
+			Role:           models.RoleFan,
+			WalletBalance:  1500.0,
+			MediaGallery:   datatypes.JSON([]byte("[]")),
+			Age:            31,
+			Gender:         "male",
+			Height:         182,
+			Work:           "Travel Writer",
+			Education:      "Bachelor's in English Literature",
+			EducationLevel: "bachelors",
+			Drinking:       "yes",
+			Location:       "Jaipur, India",
+			MobileNumber:   "123",
+			CreatedAt:      time.Now(),
+			UpdatedAt:      time.Now(),
+		},
+		{
+			ID:             "10",
+			Name:           "Pooja Reddy",
+			Username:       "pooja_reddy",
+			Email:          "pooja.reddy@example.com",
+			Password:       hashPassword("password123"),
+			AvatarURL:      "https://api.dicebear.com/7.x/avataaars/svg?seed=Pooja",
+			Bio:            "Fashion enthusiast and blogger",
+			Role:           models.RoleFan,
+			WalletBalance:  900.0,
+			MediaGallery:   datatypes.JSON([]byte("[]")),
+			Age:            23,
+			Gender:         "female",
+			Height:         163,
+			Work:           "Fashion Blogger",
+			Education:      "Bachelor's in Fashion Design",
+			EducationLevel: "bachelors",
+			Drinking:       "social",
+			Location:       "Ahmedabad, India",
+			MobileNumber:   "123",
+			CreatedAt:      time.Now(),
+			UpdatedAt:      time.Now(),
+		},
+	}
+
+	// Create all users
+	for _, user := range append(influencers, fans...) {
+		if err := DB.Create(&user).Error; err != nil {
+			log.Printf("Error creating user %s: %v", user.Email, err)
+		}
+	}
+
+	// Create sample events for each influencer
+	events := []models.Event{
+		// Events for Rahul Sharma (Tech)
+		{
+			ID:          "1",
+			Title:       "Tech Startup Workshop",
+			Description: "Learn how to build and scale your tech startup",
+			Date:        time.Now().AddDate(0, 1, 0),
+			Location:    "Bangalore Tech Park",
+			HostID:      "1",
+			Category:    "Technology",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1522071820081-009f0129c71c"]`)),
+			MinBid:      1000.0,
+			Capacity:    50,
+			BidDeadline: time.Now().AddDate(0, 0, 20),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+		{
+			ID:          "6",
+			Title:       "AI & Machine Learning Workshop",
+			Description: "Hands-on workshop on implementing AI solutions",
+			Date:        time.Now().AddDate(0, 1, 15),
+			Location:    "Bangalore Innovation Hub",
+			HostID:      "1",
+			Category:    "Technology",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1555949963-ff9fe0c870eb"]`)),
+			MinBid:      1200.0,
+			Capacity:    40,
+			BidDeadline: time.Now().AddDate(0, 0, 25),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+		{
+			ID:          "7",
+			Title:       "Web Development Bootcamp",
+			Description: "Master modern web development technologies",
+			Date:        time.Now().AddDate(0, 2, 0),
+			Location:    "Bangalore Tech Center",
+			HostID:      "1",
+			Category:    "Technology",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1498050108023-c5249f4df085"]`)),
+			MinBid:      800.0,
+			Capacity:    45,
+			BidDeadline: time.Now().AddDate(0, 1, 15),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+		{
+			ID:          "8",
+			Title:       "Blockchain Development Workshop",
+			Description: "Learn blockchain development from scratch",
+			Date:        time.Now().AddDate(0, 2, 15),
+			Location:    "Bangalore Blockchain Hub",
+			HostID:      "1",
+			Category:    "Technology",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1639762681057-408e52192e55"]`)),
+			MinBid:      1500.0,
+			Capacity:    35,
+			BidDeadline: time.Now().AddDate(0, 1, 30),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+
+		// Events for Priya Patel (Fashion)
+		{
+			ID:          "2",
+			Title:       "Fashion Photography Masterclass",
+			Description: "Master the art of fashion photography",
+			Date:        time.Now().AddDate(0, 1, 15),
+			Location:    "Mumbai Fashion Studio",
+			HostID:      "2",
+			Category:    "Fashion",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1551232864-3f0890e580d9"]`)),
+			MinBid:      800.0,
+			Capacity:    30,
+			BidDeadline: time.Now().AddDate(0, 0, 25),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+		{
+			ID:          "9",
+			Title:       "Personal Styling Workshop",
+			Description: "Learn to create your signature style",
+			Date:        time.Now().AddDate(0, 1, 30),
+			Location:    "Mumbai Style Studio",
+			HostID:      "2",
+			Category:    "Fashion",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1445205170230-053b83016050"]`)),
+			MinBid:      600.0,
+			Capacity:    25,
+			BidDeadline: time.Now().AddDate(0, 1, 10),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+		{
+			ID:          "10",
+			Title:       "Fashion Makeup Masterclass",
+			Description: "Professional makeup techniques for fashion",
+			Date:        time.Now().AddDate(0, 2, 10),
+			Location:    "Mumbai Beauty Studio",
+			HostID:      "2",
+			Category:    "Fashion",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1596462502278-27bfdc403348"]`)),
+			MinBid:      700.0,
+			Capacity:    20,
+			BidDeadline: time.Now().AddDate(0, 1, 20),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+		{
+			ID:          "11",
+			Title:       "Fashion Branding Workshop",
+			Description: "Create and market your fashion brand",
+			Date:        time.Now().AddDate(0, 2, 25),
+			Location:    "Mumbai Business Center",
+			HostID:      "2",
+			Category:    "Fashion",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1441984904996-e0b6ba687e04"]`)),
+			MinBid:      900.0,
+			Capacity:    30,
+			BidDeadline: time.Now().AddDate(0, 1, 35),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+
+		// Events for Arjun Singh (Fitness)
+		{
+			ID:          "3",
+			Title:       "Fitness Bootcamp",
+			Description: "Transform your body in 30 days",
+			Date:        time.Now().AddDate(0, 0, 20),
+			Location:    "Delhi Fitness Center",
+			HostID:      "3",
+			Category:    "Fitness",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1534438327276-14e5300c3a48"]`)),
+			MinBid:      600.0,
+			Capacity:    40,
+			BidDeadline: time.Now().AddDate(0, 0, 10),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+		{
+			ID:          "12",
+			Title:       "Yoga & Meditation Retreat",
+			Description: "Find inner peace and physical wellness",
+			Date:        time.Now().AddDate(0, 1, 5),
+			Location:    "Delhi Wellness Center",
+			HostID:      "3",
+			Category:    "Fitness",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1544367567-0f2fcb009e0b"]`)),
+			MinBid:      500.0,
+			Capacity:    35,
+			BidDeadline: time.Now().AddDate(0, 0, 20),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+		{
+			ID:          "13",
+			Title:       "Nutrition & Diet Planning",
+			Description: "Learn to create personalized diet plans",
+			Date:        time.Now().AddDate(0, 1, 20),
+			Location:    "Delhi Health Center",
+			HostID:      "3",
+			Category:    "Fitness",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1490645935967-10de6ba17061"]`)),
+			MinBid:      400.0,
+			Capacity:    30,
+			BidDeadline: time.Now().AddDate(0, 0, 35),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+		{
+			ID:          "14",
+			Title:       "CrossFit Training Camp",
+			Description: "Intensive CrossFit training program",
+			Date:        time.Now().AddDate(0, 2, 5),
+			Location:    "Delhi CrossFit Center",
+			HostID:      "3",
+			Category:    "Fitness",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1533681902576-1969662b3d00"]`)),
+			MinBid:      700.0,
+			Capacity:    25,
+			BidDeadline: time.Now().AddDate(0, 1, 20),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+
+		// Events for Ananya Gupta (Food)
+		{
+			ID:          "4",
+			Title:       "Cooking Masterclass",
+			Description: "Learn authentic Indian cuisine",
+			Date:        time.Now().AddDate(0, 0, 25),
+			Location:    "Hyderabad Cooking Studio",
+			HostID:      "4",
+			Category:    "Food",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1556911220-bff31c812dba"]`)),
+			MinBid:      700.0,
+			Capacity:    25,
+			BidDeadline: time.Now().AddDate(0, 0, 15),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+		{
+			ID:          "15",
+			Title:       "Baking Workshop",
+			Description: "Master the art of baking",
+			Date:        time.Now().AddDate(0, 1, 10),
+			Location:    "Hyderabad Baking Studio",
+			HostID:      "4",
+			Category:    "Food",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1509440159596-0249088772ff"]`)),
+			MinBid:      600.0,
+			Capacity:    20,
+			BidDeadline: time.Now().AddDate(0, 0, 25),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+		{
+			ID:          "16",
+			Title:       "Street Food Tour",
+			Description: "Explore Hyderabad's best street food",
+			Date:        time.Now().AddDate(0, 1, 25),
+			Location:    "Hyderabad Food Street",
+			HostID:      "4",
+			Category:    "Food",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1504674900247-0877df9cc836"]`)),
+			MinBid:      500.0,
+			Capacity:    30,
+			BidDeadline: time.Now().AddDate(0, 1, 10),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+		{
+			ID:          "17",
+			Title:       "Wine Tasting Workshop",
+			Description: "Learn about wine pairing and tasting",
+			Date:        time.Now().AddDate(0, 2, 15),
+			Location:    "Hyderabad Wine Cellar",
+			HostID:      "4",
+			Category:    "Food",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1510812431401-41d2bd2722f3"]`)),
+			MinBid:      800.0,
+			Capacity:    25,
+			BidDeadline: time.Now().AddDate(0, 1, 30),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+
+		// Events for Vikram Malhotra (Travel)
+		{
+			ID:          "5",
+			Title:       "Travel Photography Workshop",
+			Description: "Capture stunning travel moments",
+			Date:        time.Now().AddDate(0, 2, 0),
+			Location:    "Goa Beach Resort",
+			HostID:      "5",
+			Category:    "Travel",
+			Images:      datatypes.JSON([]byte(`["https://images.unsplash.com/photo-1469854523086-cc02fe5d8800"]`)),
+			MinBid:      900.0,
+			Capacity:    35,
+			BidDeadline: time.Now().AddDate(0, 1, 15),
+			Status:      "upcoming",
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		},
+	}
+
+	// Create all events
+	for _, event := range events {
+		if err := DB.Create(&event).Error; err != nil {
+			log.Printf("Error creating event %s: %v", event.Title, err)
+		}
+	}
+
+	// After creating all events
+	// Update each influencer's EventsHosted count
+	for _, influencer := range influencers {
+		var count int64
+		if err := DB.Model(&models.Event{}).Where("host_id = ?", influencer.ID).Count(&count).Error; err == nil {
+			DB.Model(&models.User{}).Where("id = ?", influencer.ID).Update("events_hosted_count", count)
+		}
+	}
+
+	// Add some event attendees
+	attendees := []models.EventAttendee{
+		{
+			UserID:    "6", // Riya Mehta
+			EventID:   "1", // Tech Startup Summit
+			CreatedAt: time.Now(),
+		},
+		{
+			UserID:    "7", // Karan Verma
+			EventID:   "5", // Fitness Bootcamp
+			CreatedAt: time.Now(),
+		},
+		{
+			UserID:    "8", // Neha Kapoor
+			EventID:   "7", // Master Chef Workshop
+			CreatedAt: time.Now(),
+		},
+		{
+			UserID:    "9", // Aditya Joshi
+			EventID:   "9", // Travel Photography Workshop
+			CreatedAt: time.Now(),
+		},
+		{
+			UserID:    "10", // Pooja Reddy
+			EventID:   "3",  // Fashion Week Meet & Greet
+			CreatedAt: time.Now(),
+		},
+	}
+
+	for _, attendee := range attendees {
+		if err := DB.Create(&attendee).Error; err != nil {
+			log.Printf("Error creating event attendee: %v", err)
+		}
+	}
+
+	log.Println("Database seeding completed successfully!")
+}
+
+func hashPassword(password string) string {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(hashedPassword)
+}
