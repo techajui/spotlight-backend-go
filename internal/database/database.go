@@ -21,6 +21,10 @@ func InitDB() *gorm.DB {
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
+	dbSSLMode := os.Getenv("DB_SSLMODE")
+	if dbSSLMode == "" {
+		dbSSLMode = "disable"
+	}
 
 	// Configure GORM logger
 	newLogger := logger.New(
@@ -34,8 +38,11 @@ func InitDB() *gorm.DB {
 	)
 
 	// Create DSN for PostgreSQL
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		dbHost, dbUser, dbPassword, dbName, dbPort)
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		dbHost, dbPort, dbUser, dbPassword, dbName, dbSSLMode)
+
+	log.Printf("Connecting to database with DSN: host=%s port=%s user=%s dbname=%s sslmode=%s",
+		dbHost, dbPort, dbUser, dbName, dbSSLMode)
 
 	// Open database connection
 	var err error
@@ -51,7 +58,6 @@ func InitDB() *gorm.DB {
 		&models.User{},
 		&models.Event{},
 		&models.EventAttendee{},
-		&models.Bid{},
 		&models.Application{},
 	)
 	if err != nil {
