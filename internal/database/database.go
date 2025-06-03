@@ -84,6 +84,9 @@ func InitDB() *gorm.DB {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
+	// Seed initial data
+	SeedData()
+
 	log.Println("Database connected and migrated successfully!")
 	return DB
 }
