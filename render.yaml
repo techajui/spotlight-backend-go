@@ -4,6 +4,7 @@ services:
     env: go
     buildCommand: go build -o main ./cmd/api
     startCommand: ./main
+    healthCheckPath: /health
     envVars:
       - key: GIN_MODE
         value: release
@@ -32,4 +33,5 @@ databases:
   - name: spotlight-db
     databaseName: spotlight
     user: postgres
-    plan: free 
+    plan: free
+    ipAllowList: [] 

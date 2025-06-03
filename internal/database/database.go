@@ -22,6 +22,15 @@ func InitDB() *gorm.DB {
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
 
+	// Debug log the environment variables (excluding password)
+	log.Printf("Database configuration - Host: %s, Port: %s, User: %s, DB: %s",
+		dbHost, dbPort, dbUser, dbName)
+
+	// Validate required environment variables
+	if dbHost == "" || dbPort == "" || dbUser == "" || dbPassword == "" || dbName == "" {
+		log.Fatal("Missing required database environment variables")
+	}
+
 	// Configure GORM logger
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags),
@@ -34,8 +43,8 @@ func InitDB() *gorm.DB {
 	)
 
 	// Create DSN for PostgreSQL
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		dbHost, dbUser, dbPassword, dbName, dbPort)
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		dbHost, dbPort, dbUser, dbPassword, dbName)
 
 	// Open database connection
 	var err error
