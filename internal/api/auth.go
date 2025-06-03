@@ -31,6 +31,7 @@ func RegisterAuthRoutes(r *gin.RouterGroup) {
 		auth.POST("/login", login)
 		auth.POST("/google-auth", googleAuth)
 		auth.POST("/check-mobile", checkMobileNumber)
+		auth.GET("/users", getAllUsers)
 	}
 }
 
@@ -279,6 +280,41 @@ func checkMobileNumber(c *gin.Context) {
 		"exists": true,
 		"user_id": user.ID,
 		"message": "Mobile number found",
+	})
+}
+
+// getAllUsers retrieves all users from the database
+func getAllUsers(c *gin.Context) {
+	var users []models.User
+	if err := database.DB.Find(&users).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
+		return
+	}
+
+	// Transform users to match frontend expectations
+	var response []gin.H
+	for _, user := range users {
+		response = append(response, gin.H{
+			"id":              user.ID,
+			"name":            user.Name,
+			"username":        user.Username,
+			"email":           user.Email,
+			"role":            user.Role,
+			"avatar_url":      user.AvatarURL,
+			"bio":             user.Bio,
+			"mediaGallery":    user.MediaGallery,
+			"walletBalance":   user.WalletBalance,
+			"followerCount":   user.FollowerCount,
+			"instagramHandle": user.InstagramHandle,
+			"verified":        user.Verified,
+			"created_at":      user.CreatedAt,
+			"updated_at":      user.UpdatedAt,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"users": response,
+		"count": len(response),
 	})
 }
 
