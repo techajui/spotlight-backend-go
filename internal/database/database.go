@@ -26,9 +26,24 @@ func InitDB() *gorm.DB {
 	log.Printf("Database configuration - Host: %s, Port: %s, User: %s, DB: %s",
 		dbHost, dbPort, dbUser, dbName)
 
+	// Set default port if not provided
+	if dbPort == "" {
+		dbPort = "5432"
+		log.Println("Using default PostgreSQL port: 5432")
+	}
+
 	// Validate required environment variables
-	if dbHost == "" || dbPort == "" || dbUser == "" || dbPassword == "" || dbName == "" {
-		log.Fatal("Missing required database environment variables")
+	if dbHost == "" {
+		log.Fatal("Missing required environment variable: DB_HOST")
+	}
+	if dbUser == "" {
+		log.Fatal("Missing required environment variable: DB_USER")
+	}
+	if dbPassword == "" {
+		log.Fatal("Missing required environment variable: DB_PASSWORD")
+	}
+	if dbName == "" {
+		log.Fatal("Missing required environment variable: DB_NAME")
 	}
 
 	// Configure GORM logger
@@ -45,6 +60,8 @@ func InitDB() *gorm.DB {
 	// Create DSN for PostgreSQL
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		dbHost, dbPort, dbUser, dbPassword, dbName)
+
+	log.Printf("Attempting to connect to database at %s:%s", dbHost, dbPort)
 
 	// Open database connection
 	var err error

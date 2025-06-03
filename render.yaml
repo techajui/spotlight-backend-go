@@ -12,6 +12,8 @@ services:
         fromDatabase:
           name: spotlight-db
           property: host
+      - key: DB_PORT
+        value: "5432"
       - key: DB_USER
         fromDatabase:
           name: spotlight-db
@@ -24,10 +26,6 @@ services:
         fromDatabase:
           name: spotlight-db
           property: database
-      - key: DB_PORT
-        fromDatabase:
-          name: spotlight-db
-          property: port
 
 databases:
   - name: spotlight-db
