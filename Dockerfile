@@ -20,5 +20,5 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/api
 # Expose the port
 EXPOSE 8080
 
-# Run migrations, seed data, and start the application
-CMD ["./main", "migrate", "seed", "serve"]
+# Run migrations and start the application
+CMD sh -c "for migration in \$(ls -v migrations/*.sql); do echo \"Running migration: \$migration\"; PGPASSWORD=\$DB_PASSWORD psql -h \$DB_HOST -p \$DB_PORT -U \$DB_USER -d \$DB_NAME -f \$migration; done && ./main serve"
