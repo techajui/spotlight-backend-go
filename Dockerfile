@@ -3,7 +3,7 @@ FROM golang:1.21-alpine
 WORKDIR /app
 
 # Install git and build dependencies
-RUN apk add --no-cache git
+RUN apk add --no-cache git gcc musl-dev
 
 # Copy go.mod and go.sum files
 COPY go.mod go.sum ./
