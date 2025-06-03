@@ -2,8 +2,6 @@ module spotlight-backend-go
 
 go 1.22.0
 
-toolchain go1.24.3
-
 require (
 	github.com/gin-contrib/cors v1.5.0
 	github.com/gin-gonic/gin v1.9.1
