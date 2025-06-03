@@ -8,16 +8,6 @@ services:
     envVars:
       - key: GIN_MODE
         value: release
-      - key: DB_HOST
-        value: dpg-d0vavuvfte5s739f5p9g-a
-      - key: DB_PORT
-        value: "5432"
-      - key: DB_USER
-        value: ajay_pd5y_user
-      - key: DB_PASSWORD
-        value: WOD8RfeEtawS5N7SQnf2OKvxMXQuaHLa
-      - key: DB_NAME
-        value: ajay_pd5y
 
 databases:
   - name: spotlight-db
