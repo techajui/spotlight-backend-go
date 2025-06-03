@@ -17,26 +17,8 @@ COPY . .
 # Build the application with optimizations
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/api
 
-# Create a script to run migrations and start the app
-RUN echo '#!/bin/sh\n\
-echo "Waiting for database..."\n\
-sleep 10\n\
-\n\
-echo "Running database migrations..."\n\
-for file in /app/migrations/*.sql; do\n\
-  echo "Running migration: $file"\n\
-  PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -d $DB_NAME -f "$file"\n\
-done\n\
-\n\
-echo "Running database seed..."\n\
-./main seed\n\
-\n\
-echo "Starting application..."\n\
-./main\n\
-' > /app/start.sh && chmod +x /app/start.sh
-
 # Expose the port
 EXPOSE 8080
 
-# Run the start script
-CMD ["/app/start.sh"]
+# Run migrations, seed data, and start the application
+CMD ["./main", "migrate", "seed", "serve"]
