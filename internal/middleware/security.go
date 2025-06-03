@@ -29,6 +29,7 @@ func CORSMiddleware() gin.HandlerFunc {
 			"http://localhost:5173",          // Vite (optional)
 			"http://localhost:8080",          // Backend (if used directly)
 			"https://spotlight-frontend.com", // Production frontend
+			"https://spot.smartrating.in",    // Production domain
 		},
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH",
@@ -41,8 +42,10 @@ func CORSMiddleware() gin.HandlerFunc {
 		},
 		AllowCredentials: true,
 		AllowOriginFunc: func(origin string) bool {
-			// Accept all localhost origins for local dev flexibility
-			return origin == "http://localhost:3000" || origin == "http://localhost:8080"
+			// Accept all localhost origins and the production domain
+			return origin == "http://localhost:3000" || 
+				origin == "http://localhost:8080" || 
+				origin == "https://spot.smartrating.in"
 		},
 		MaxAge: 12 * time.Hour,
 	})
