@@ -28,8 +28,7 @@ func CORSMiddleware() gin.HandlerFunc {
 			"http://localhost:3000",          // React dev server
 			"http://localhost:5173",          // Vite (optional)
 			"http://localhost:8080",          // Backend (if used directly)
-			"https://spotlight-frontend.com", // Production frontend,
-			"http://192.168.1.2:3000",       // Localhost
+			"https://spotlight-frontend.com", // Production frontend
 		},
 		AllowMethods: []string{
 			"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH",

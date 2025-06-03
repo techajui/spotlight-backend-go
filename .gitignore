@@ -1,0 +1,72 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+main
+cloud-sql-proxy
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+vendor/
+
+# Go workspace file
+go.work
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Log files
+*.log
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+
+# Build output
+bin/
+dist/
+
+# Local development files
+local-dev/
+dev/
+
+# Cloud specific files
+cloud-run-config.yaml
+cloudbuild.yaml
+
+# Generated files
+*.generated.go
+*.pb.go
+
+# Debug files
+debug
+debug.test
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Config files with sensitive data
+config/
+*.json 

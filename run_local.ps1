@@ -7,6 +7,15 @@ $env:DB_NAME = "spotlight"
 $env:LOCAL_DEV = "true"
 $env:JWT_SECRET = "spotlight_jwt_secret_key_2024_secure"
 $env:PGPASSWORD = $env:DB_PASSWORD
+$env:GOOGLE_APPLICATION_CREDENTIALS = "$PSScriptRoot\config\client_secret_1089184396463-55fkfc50skejp2cqe448ctrgff40oonj.apps.googleusercontent.com.json"
+$env:GOOGLE_CLIENT_ID = "1089184396463-55fkfc50skejp2cqe448ctrgff40oonj.apps.googleusercontent.com"
+$env:GOOGLE_CLIENT_SECRET = "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"
+$env:FRONTEND_URL = "http://localhost:3000"
+$env:FIREBASE_AUTH_DOMAIN = "spotlight-v1.firebaseapp.com"
+$env:FIREBASE_PROJECT_ID = "spotlight-v1"
+$env:FIREBASE_REDIRECT_URI = "https://spotlight-v1.firebaseapp.com/__/auth/handler"
+$env:GOOGLE_REDIRECT_URI = "https://spotlight-v1.firebaseapp.com/__/auth/handler"
+
 
 # Set psql path
 $PSQL_PATH = "C:\Program Files\PostgreSQL\17\pgAdmin 4\runtime\psql.exe"

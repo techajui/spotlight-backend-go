@@ -8,58 +8,22 @@ services:
     environment:
       - DB_HOST=postgres
       - DB_USER=postgres
-      - DB_PASSWORD=postgresspotlight@mma
+      - DB_PASSWORD=postgres
       - DB_NAME=spotlight
       - DB_PORT=5432
-      - DB_SSLMODE=disable
-      - JWT_SECRET=spotlight_jwt_secret_key_2024_secure
-      - LOCAL_DEV=true
     depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - spotlight-network
-    restart: unless-stopped
+      - postgres
 
   postgres:
     image: postgres:15-alpine
-    container_name: spotlight-postgres
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgresspotlight@mma
+      - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=spotlight
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./migrations:/docker-entrypoint-initdb.d
-    networks:
-      - spotlight-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: spotlight-pgadmin
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@spotlight.com
-      - PGADMIN_DEFAULT_PASSWORD=admin
-    ports:
-      - "5050:80"
-    depends_on:
-      - postgres
-    networks:
-      - spotlight-network
-    restart: unless-stopped
-
-networks:
-  spotlight-network:
-    driver: bridge
 
 volumes:
-  postgres_data:
-    name: spotlight-postgres-data 
+  postgres_data: 

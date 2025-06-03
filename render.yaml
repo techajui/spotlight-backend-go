@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: spotlight-backend
+    env: go
+    buildCommand: go build -o main ./cmd/api
+    startCommand: ./main
+    envVars:
+      - key: GIN_MODE
+        value: release
+      - key: DB_HOST
+        fromDatabase:
+          name: spotlight-db
+          property: host
+      - key: DB_USER
+        fromDatabase:
+          name: spotlight-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: spotlight-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: spotlight-db
+          property: database
+      - key: DB_PORT
+        fromDatabase:
+          name: spotlight-db
+          property: port
+
+databases:
+  - name: spotlight-db
+    databaseName: spotlight
+    user: postgres
+    plan: free 
