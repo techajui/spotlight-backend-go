@@ -9,27 +9,19 @@ services:
       - key: GIN_MODE
         value: release
       - key: DB_HOST
-        fromDatabase:
-          name: spotlight-db
-          property: host
+        value: dpg-d0vavuvfte5s739f5p9g-a
       - key: DB_PORT
         value: "5432"
       - key: DB_USER
-        fromDatabase:
-          name: spotlight-db
-          property: user
+        value: ajay_pd5y_user
       - key: DB_PASSWORD
-        fromDatabase:
-          name: spotlight-db
-          property: password
+        value: WOD8RfeEtawS5N7SQnf2OKvxMXQuaHLa
       - key: DB_NAME
-        fromDatabase:
-          name: spotlight-db
-          property: database
+        value: ajay_pd5y
 
 databases:
   - name: spotlight-db
-    databaseName: spotlight
-    user: postgres
+    databaseName: ajay_pd5y
+    user: ajay_pd5y_user
     plan: free
     ipAllowList: [] 
