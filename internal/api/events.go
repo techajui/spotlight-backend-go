@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"spotlight-backend-go/internal/models"
 	"spotlight-backend-go/internal/schemas"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -243,10 +244,17 @@ func unattendEvent(db *gorm.DB) gin.HandlerFunc {
 func placeBid(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
-		userID := c.GetString("user_id")
+		userID := strings.TrimSpace(c.GetString("user_id"))
+
+		// Check if user is authenticated
+		if userID == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+			return
+		}
 
 		var req struct {
-			Amount float64 `json:"amount" binding:"required"`
+			Amount  float64 `json:"amount" binding:"required"`
+			Message string  `json:"message"`
 		}
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -273,7 +281,8 @@ func placeBid(db *gorm.DB) gin.HandlerFunc {
 
 		// Create bid
 		bid := models.Bid{
-			EventID: event.ID,
+			ID:      uuid.New().String(),
+			EventID: id,
 			UserID:  userID,
 			Amount:  req.Amount,
 		}
@@ -281,6 +290,21 @@ func placeBid(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to place bid"})
 			return
 		}
+
+		// Create or update application entry
+		application := models.Application{
+			ID:        uuid.New().String(),
+			EventID:   id,
+			FanID:     userID,
+			Status:    "pending",
+			Message:   req.Message,
+			BidAmount: req.Amount,
+		}
+		if err := db.Where("event_id = ? AND fan_id = ?", id, userID).Assign(application).FirstOrCreate(&application).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create application"})
+			return
+		}
+
 		c.JSON(http.StatusCreated, bid)
 	}
 }

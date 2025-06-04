@@ -21,6 +21,7 @@ func RegisterUserRoutes(r *gin.RouterGroup) {
 		users.PUT("/me", updateMe)
 		users.GET("/:id", getUserProfile)
 		users.GET("/influencers", getAllInfluencers)
+		users.GET("/me/events", getUserEvents)
 	}
 }
 
@@ -169,7 +170,7 @@ func getUserProfile(c *gin.Context) {
 	id := c.Param("id")
 	var user models.User
 
-	if err := database.DB.First(&user, id).Error; err != nil {
+	if err := database.DB.Where("id = ?", id).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// Create a new user if not found
 			user = models.User{
@@ -220,4 +221,57 @@ func getAllInfluencers(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, influencers)
+}
+
+// getUserEvents returns all events for the current user with bid status
+func getUserEvents(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	currentUser := user.(*models.User)
+
+	// Get all events where user has placed a bid
+	var events []models.Event
+	if err := database.DB.
+		Joins("JOIN bids ON bids.event_id = events.id").
+		Where("bids.user_id = ?", currentUser.ID).
+		Preload("Host").
+		Find(&events).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch events"})
+		return
+	}
+
+	// Get bid information for each event
+	type EventWithBid struct {
+		models.Event
+		BidAmount float64 `json:"bid_amount"`
+		BidStatus string  `json:"bid_status"`
+	}
+
+	var eventsWithBids []EventWithBid
+	for _, event := range events {
+		var bid models.Bid
+		if err := database.DB.Where("event_id = ? AND user_id = ?", event.ID, currentUser.ID).First(&bid).Error; err != nil {
+			continue
+		}
+
+		// Determine bid status
+		bidStatus := "pending"
+		if event.BidDeadline.Before(time.Now()) {
+			bidStatus = "expired"
+		}
+
+		eventsWithBids = append(eventsWithBids, EventWithBid{
+			Event:     event,
+			BidAmount: bid.Amount,
+			BidStatus: bidStatus,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"events": eventsWithBids,
+	})
 }

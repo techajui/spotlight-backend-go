@@ -22,30 +22,6 @@ func InitDB() *gorm.DB {
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("DB_NAME")
 
-	// Debug log the environment variables (excluding password)
-	log.Printf("Database configuration - Host: %s, Port: %s, User: %s, DB: %s",
-		dbHost, dbPort, dbUser, dbName)
-
-	// Set default port if not provided
-	if dbPort == "" {
-		dbPort = "5432"
-		log.Println("Using default PostgreSQL port: 5432")
-	}
-
-	// Validate required environment variables
-	if dbHost == "" {
-		log.Fatal("Missing required environment variable: DB_HOST")
-	}
-	if dbUser == "" {
-		log.Fatal("Missing required environment variable: DB_USER")
-	}
-	if dbPassword == "" {
-		log.Fatal("Missing required environment variable: DB_PASSWORD")
-	}
-	if dbName == "" {
-		log.Fatal("Missing required environment variable: DB_NAME")
-	}
-
 	// Configure GORM logger
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags),
@@ -58,10 +34,8 @@ func InitDB() *gorm.DB {
 	)
 
 	// Create DSN for PostgreSQL
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		dbHost, dbPort, dbUser, dbPassword, dbName)
-
-	log.Printf("Attempting to connect to database at %s:%s", dbHost, dbPort)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		dbHost, dbUser, dbPassword, dbName, dbPort)
 
 	// Open database connection
 	var err error
@@ -83,9 +57,6 @@ func InitDB() *gorm.DB {
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
-
-	// Seed initial data
-	SeedData()
 
 	log.Println("Database connected and migrated successfully!")
 	return DB

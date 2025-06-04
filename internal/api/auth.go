@@ -18,10 +18,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	oauth2api "google.golang.org/api/oauth2/v2"
+	"google.golang.org/api/option"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
-	"google.golang.org/api/option"
-	oauth2api "google.golang.org/api/oauth2/v2"
 )
 
 func RegisterAuthRoutes(r *gin.RouterGroup) {
@@ -29,9 +29,9 @@ func RegisterAuthRoutes(r *gin.RouterGroup) {
 	{
 		auth.POST("/register", register)
 		auth.POST("/login", login)
+		auth.POST("/oldLogin", oldLogin)
 		auth.POST("/google-auth", googleAuth)
 		auth.POST("/check-mobile", checkMobileNumber)
-		auth.GET("/users", getAllUsers)
 	}
 }
 
@@ -57,6 +57,12 @@ func register(c *gin.Context) {
 		mediaGalleryJSON = []byte("[]")
 	}
 
+	// Convert Interests to JSON
+	interestsJSON, err := json.Marshal(req.Interests)
+	if err != nil {
+		interestsJSON = []byte("[]")
+	}
+
 	// Generate username from email (take part before @ and add random number)
 	username := strings.Split(req.Email, "@")[0]
 	username = strings.ToLower(username)
@@ -64,15 +70,24 @@ func register(c *gin.Context) {
 	username = fmt.Sprintf("%s%d", username, time.Now().UnixNano()%10000)
 
 	user := models.User{
-		ID:           generateUUID(),
-		Name:         req.Name,
-		Username:     username,
-		Email:        req.Email,
-		Password:     string(hashedPassword),
-		Role:         models.RoleFan, // Default to fan, or allow from req if needed
-		MediaGallery: datatypes.JSON(mediaGalleryJSON),
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		ID:             generateUUID(),
+		Name:           req.Name,
+		Username:       username,
+		Email:          req.Email,
+		Password:       string(hashedPassword),
+		Role:           req.Role,
+		Bio:            req.Bio,
+		Gender:         req.Gender,
+		Age:            req.Age,
+		Work:           req.Work,
+		Education:      req.Education,
+		Interests:      datatypes.JSON(interestsJSON),
+		AvatarURL:      req.AvatarURL,
+		MediaGallery:   datatypes.JSON(mediaGalleryJSON),
+		InstagramHandle: req.InstagramHandle,
+		FollowerCount:  req.FollowerCount,
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
 	}
 
 	if err := database.DB.Create(&user).Error; err != nil {
@@ -88,12 +103,16 @@ func register(c *gin.Context) {
 			"username":        user.Username,
 			"email":           user.Email,
 			"role":            user.Role,
-			"avatar_url":      user.AvatarURL,
 			"bio":             user.Bio,
-			"mediaGallery":    user.MediaGallery,
-			"walletBalance":   user.WalletBalance,
-			"followerCount":   user.FollowerCount,
-			"instagramHandle": user.InstagramHandle,
+			"gender":          user.Gender,
+			"age":             user.Age,
+			"work":            user.Work,
+			"education":       user.Education,
+			"interests":       user.Interests,
+			"avatar_url":      user.AvatarURL,
+			"media_gallery":   user.MediaGallery,
+			"instagram_handle": user.InstagramHandle,
+			"follower_count":  user.FollowerCount,
 			"verified":        user.Verified,
 		},
 	}
@@ -283,18 +302,39 @@ func checkMobileNumber(c *gin.Context) {
 	})
 }
 
-// getAllUsers retrieves all users from the database
-func getAllUsers(c *gin.Context) {
-	var users []models.User
-	if err := database.DB.Find(&users).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
+func oldLogin(c *gin.Context) {
+	var req struct {
+		Email    string `json:"email" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and password are required"})
 		return
 	}
 
-	// Transform users to match frontend expectations
-	var response []gin.H
-	for _, user := range users {
-		response = append(response, gin.H{
+	var user models.User
+	if err := database.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+
+	// Compare password with hashed password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		return
+	}
+
+	// Generate token
+	token := generateToken(user.ID, user.Role)
+
+	c.JSON(http.StatusOK, gin.H{
+		"token": token,
+		"user": gin.H{
 			"id":              user.ID,
 			"name":            user.Name,
 			"username":        user.Username,
@@ -307,14 +347,7 @@ func getAllUsers(c *gin.Context) {
 			"followerCount":   user.FollowerCount,
 			"instagramHandle": user.InstagramHandle,
 			"verified":        user.Verified,
-			"created_at":      user.CreatedAt,
-			"updated_at":      user.UpdatedAt,
-		})
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"users": response,
-		"count": len(response),
+		},
 	})
 }
 
@@ -329,6 +362,9 @@ func generateToken(userID string, role models.UserRole) string {
 	if jwtSecret == "" {
 		panic("JWT_SECRET environment variable is not set")
 	}
+
+	// Trim any whitespace from the user ID
+	userID = strings.TrimSpace(userID)
 
 	// Create the Claims
 	claims := jwt.MapClaims{

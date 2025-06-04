@@ -60,6 +60,7 @@ func main() {
 			api.RegisterEventRoutes(protected, db)
 			api.RegisterChatRoutes(protected, db)
 			api.RegisterUploadRoutes(protected)
+			api.RegisterApplicationRoutes(protected, db)
 		}
 	}
 
