@@ -38,18 +38,28 @@ func RegisterAuthRoutes(r *gin.RouterGroup) {
 func register(c *gin.Context) {
 	var req schemas.UserCreate
 	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("Registration request binding error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	log.Printf("Attempting registration for email: %s", req.Email)
+
 	// Check if user already exists
 	var existing models.User
 	if err := database.DB.Where("email = ?", req.Email).First(&existing).Error; err == nil {
+		log.Printf("User already exists with email: %s", req.Email)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
 		return
 	}
 
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	log.Printf("Generating password hash for email: %s", req.Email)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Printf("Error hashing password: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process password"})
+		return
+	}
 
 	// Convert MediaGallery to JSON
 	mediaGalleryJSON, err := json.Marshal(req.MediaGallery)
@@ -90,11 +100,14 @@ func register(c *gin.Context) {
 		UpdatedAt:      time.Now(),
 	}
 
+	log.Printf("Creating user in database for email: %s", req.Email)
 	if err := database.DB.Create(&user).Error; err != nil {
+		log.Printf("Database error creating user: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}
 
+	log.Printf("User created successfully for email: %s", req.Email)
 	// Transform user to match frontend expectations
 	response := gin.H{
 		"user": gin.H{
@@ -309,26 +322,38 @@ func oldLogin(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("Login request binding error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and password are required"})
 		return
 	}
 
+	log.Printf("Attempting login for email: %s", req.Email)
+	log.Printf("Request body: %+v", req)
+
 	var user models.User
 	if err := database.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
+			log.Printf("User not found for email: %s", req.Email)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 			return
 		}
+		log.Printf("Database error during login: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 		return
 	}
 
+	log.Printf("User found in database: %+v", user)
+	log.Printf("Stored password hash: %s", user.Password)
+	log.Printf("Attempting to compare password hash with provided password")
+
 	// Compare password with hashed password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		log.Printf("Password mismatch for email: %s, error: %v", req.Email, err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
+	log.Printf("Login successful for email: %s", req.Email)
 	// Generate token
 	token := generateToken(user.ID, user.Role)
 
