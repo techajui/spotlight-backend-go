@@ -33,6 +33,7 @@ func RegisterAuthRoutes(r *gin.RouterGroup) {
 		auth.POST("/google-auth", googleAuth)
 		auth.POST("/check-mobile", checkMobileNumber)
 		auth.GET("/test/users", getAllUsers)
+		auth.DELETE("/users/all", deleteAllUsers)
 	}
 }
 
@@ -485,5 +486,28 @@ func getAllUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"users": usersWithPasswords,
 		"count": len(usersWithPasswords),
+	})
+}
+
+// Delete all users from the database
+func deleteAllUsers(c *gin.Context) {
+	// Check if user is admin
+	userRole, exists := c.Get("user_role")
+	if !exists || userRole != models.AdminRole {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only administrators can delete all users"})
+		return
+	}
+
+	// Delete all users
+	result := database.DB.Exec("DELETE FROM users")
+	if result.Error != nil {
+		log.Printf("Error deleting all users: %v", result.Error)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete users"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("Successfully deleted %d users", result.RowsAffected),
+		"count":   result.RowsAffected,
 	})
 }
