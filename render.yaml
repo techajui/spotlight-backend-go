@@ -2,7 +2,7 @@ services:
   - type: web
     name: spotlight-backend
     env: go
-    buildCommand: go build -o main ./cmd/api
+    buildCommand: CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
     startCommand: ./main
     healthCheckPath: /health
     envVars:
