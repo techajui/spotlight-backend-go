@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/lib/pq"
+	_ "gorm.io/driver/postgres"
 )
 
 func RunMigrations() error {
