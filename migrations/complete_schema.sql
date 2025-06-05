@@ -81,18 +81,69 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 
 -- 003_add_profile_fields.sql
--- Add new profile fields to users table
-ALTER TABLE users
-ADD COLUMN IF NOT EXISTS age INTEGER,
-ADD COLUMN IF NOT EXISTS gender VARCHAR(50),
-ADD COLUMN IF NOT EXISTS height INTEGER,
-ADD COLUMN IF NOT EXISTS work TEXT,
-ADD COLUMN IF NOT EXISTS education TEXT,
-ADD COLUMN IF NOT EXISTS education_level VARCHAR(50),
-ADD COLUMN IF NOT EXISTS drinking VARCHAR(50),
-ADD COLUMN IF NOT EXISTS location TEXT,
-ADD COLUMN IF NOT EXISTS government_id_url TEXT,
-ADD COLUMN IF NOT EXISTS verified_at TIMESTAMP;
+-- Add new profile fields to users table if they don't exist
+DO $$ 
+BEGIN
+    -- Add age column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'age') THEN
+        ALTER TABLE users ADD COLUMN age INTEGER;
+    END IF;
+
+    -- Add gender column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'gender') THEN
+        ALTER TABLE users ADD COLUMN gender VARCHAR(50);
+    END IF;
+
+    -- Add height column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'height') THEN
+        ALTER TABLE users ADD COLUMN height INTEGER;
+    END IF;
+
+    -- Add work column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'work') THEN
+        ALTER TABLE users ADD COLUMN work TEXT;
+    END IF;
+
+    -- Add education column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'education') THEN
+        ALTER TABLE users ADD COLUMN education TEXT;
+    END IF;
+
+    -- Add education_level column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'education_level') THEN
+        ALTER TABLE users ADD COLUMN education_level VARCHAR(50);
+    END IF;
+
+    -- Add drinking column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'drinking') THEN
+        ALTER TABLE users ADD COLUMN drinking VARCHAR(50);
+    END IF;
+
+    -- Add location column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'location') THEN
+        ALTER TABLE users ADD COLUMN location TEXT;
+    END IF;
+
+    -- Add government_id_url column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'government_id_url') THEN
+        ALTER TABLE users ADD COLUMN government_id_url TEXT;
+    END IF;
+
+    -- Add verified_at column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'verified_at') THEN
+        ALTER TABLE users ADD COLUMN verified_at TIMESTAMP;
+    END IF;
+
+    -- Add events_hosted_count column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'events_hosted_count') THEN
+        ALTER TABLE users ADD COLUMN events_hosted_count INTEGER NOT NULL DEFAULT 0;
+    END IF;
+
+    -- Add mobile_number column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'mobile_number') THEN
+        ALTER TABLE users ADD COLUMN mobile_number VARCHAR(20);
+    END IF;
+END $$;
 
 -- 004_add_events_hosted_count_to_users.sql
 -- Add events_hosted_count column to users table
