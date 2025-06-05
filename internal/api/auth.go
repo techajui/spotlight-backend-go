@@ -332,7 +332,7 @@ func oldLogin(c *gin.Context) {
 	log.Printf("Request body: %+v", req)
 
 	var user models.User
-	if err := database.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
+	if err := database.DB.Where("email = ?", strings.TrimSpace(req.Email)).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			log.Printf("User not found for email: %s", req.Email)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
@@ -343,6 +343,9 @@ func oldLogin(c *gin.Context) {
 		return
 	}
 
+	// Trim any whitespace from the stored password hash
+	user.Password = strings.TrimSpace(user.Password)
+	
 	log.Printf("User found in database: %+v", user)
 	log.Printf("Stored password hash: %s", user.Password)
 	log.Printf("Attempting to compare password hash with provided password")
@@ -355,25 +358,29 @@ func oldLogin(c *gin.Context) {
 	}
 
 	log.Printf("Login successful for email: %s", req.Email)
+	
 	// Generate token
-	token := generateToken(user.ID, user.Role)
+	token := generateToken(strings.TrimSpace(user.ID), user.Role)
+
+	// Create a clean user response without sensitive data
+	userResponse := gin.H{
+		"id":              strings.TrimSpace(user.ID),
+		"name":            user.Name,
+		"username":        user.Username,
+		"email":           user.Email,
+		"role":            user.Role,
+		"avatar_url":      user.AvatarURL,
+		"bio":             user.Bio,
+		"mediaGallery":    user.MediaGallery,
+		"walletBalance":   user.WalletBalance,
+		"followerCount":   user.FollowerCount,
+		"instagramHandle": user.InstagramHandle,
+		"verified":        user.Verified,
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
-		"user": gin.H{
-			"id":              user.ID,
-			"name":            user.Name,
-			"username":        user.Username,
-			"email":           user.Email,
-			"role":            user.Role,
-			"avatar_url":      user.AvatarURL,
-			"bio":             user.Bio,
-			"mediaGallery":    user.MediaGallery,
-			"walletBalance":   user.WalletBalance,
-			"followerCount":   user.FollowerCount,
-			"instagramHandle": user.InstagramHandle,
-			"verified":        user.Verified,
-		},
+		"user":  userResponse,
 	})
 }
 
