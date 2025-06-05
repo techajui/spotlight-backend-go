@@ -28,7 +28,6 @@ func CORSMiddleware() gin.HandlerFunc {
 			"http://localhost:3000",          // React dev server
 			"http://localhost:5173",          // Vite (optional)
 			"http://localhost:8080",          // Backend (if used directly)
-			"https://spot.smartrating.in",    // Production frontend
 			"https://spotlight-frontend.com", // Production frontend
 			"https://spotlight-backend-go.onrender.com", // Production API
 		},
