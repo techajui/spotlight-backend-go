@@ -15,6 +15,11 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	// Run database migrations
+	if err := database.RunMigrations(); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
+
 	// Initialize database
 	db := database.InitDB()
 

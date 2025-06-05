@@ -2,9 +2,7 @@ services:
   - type: web
     name: spotlight-backend
     env: go
-    buildCommand: |
-      go build -o main ./cmd/api
-      psql $DATABASE_URL -f migrations/complete_schema.sql
+    buildCommand: go build -o main ./cmd/api
     startCommand: ./main
     healthCheckPath: /health
     envVars:

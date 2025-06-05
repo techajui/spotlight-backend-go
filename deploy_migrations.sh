@@ -33,14 +33,32 @@ PROXY_PID=$!
 echo "Waiting for proxy to start..."
 sleep 5
 
-# Run schema migrations
-echo "Running schema migrations..."
-for migration in $MIGRATIONS_DIR/001_*.sql; do
-  if [ -f "$migration" ]; then
-    echo "Running migration: $migration"
-    PGPASSWORD=$DB_PASSWORD psql -h localhost -p $PROXY_PORT -U $DB_USER -d $DB_NAME -f "$migration" || echo "Migration $migration failed but continuing..."
+# Wait for database to be ready
+echo "Waiting for database to be ready..."
+for i in {1..30}; do
+  if pg_isready -h localhost -p $PROXY_PORT -U $DB_USER; then
+    echo "Database is ready!"
+    break
   fi
+  if [ $i -eq 30 ]; then
+    echo "Database connection timeout after 30 seconds"
+    exit 1
+  fi
+  echo "Waiting for database... ($i/30)"
+  sleep 1
 done
+
+# Run migrations
+echo "Running database migrations..."
+PGPASSWORD=$DB_PASSWORD psql -h localhost -p $PROXY_PORT -U $DB_USER -d $DB_NAME -f migrations/complete_schema.sql
+
+# Check if migration was successful
+if [ $? -eq 0 ]; then
+    echo "Migrations completed successfully!"
+else
+    echo "Migration failed!"
+    exit 1
+fi
 
 # Run data/mock data migrations
 echo "Running data/mock data migrations..."
