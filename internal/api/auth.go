@@ -32,6 +32,7 @@ func RegisterAuthRoutes(r *gin.RouterGroup) {
 		auth.POST("/oldLogin", oldLogin)
 		auth.POST("/google-auth", googleAuth)
 		auth.POST("/check-mobile", checkMobileNumber)
+		auth.GET("/test/users", getAllUsers)
 	}
 }
 
@@ -409,4 +410,73 @@ func generateToken(userID string, role models.UserRole) string {
 	}
 
 	return tokenString
+}
+
+// Test endpoint to get all users
+func getAllUsers(c *gin.Context) {
+	var users []models.User
+	if err := database.DB.Find(&users).Error; err != nil {
+		log.Printf("Error fetching users: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
+		return
+	}
+
+	// Create a slice to hold user data with passwords
+	type UserWithPassword struct {
+		ID              string         `json:"id"`
+		Name            string         `json:"name"`
+		Username        string         `json:"username"`
+		Email           string         `json:"email"`
+		Password        string         `json:"password"` // Include password for testing
+		Role            models.UserRole `json:"role"`
+		AvatarURL       string         `json:"avatar_url"`
+		Bio             string         `json:"bio"`
+		MediaGallery    datatypes.JSON `json:"media_gallery"`
+		WalletBalance   float64        `json:"wallet_balance"`
+		FollowerCount   int            `json:"follower_count"`
+		InstagramHandle string         `json:"instagram_handle"`
+		Verified        bool           `json:"verified"`
+		Age             int            `json:"age"`
+		Gender          string         `json:"gender"`
+		Location        string         `json:"location"`
+		Height          float64        `json:"height"`
+		Work            string         `json:"work"`
+		Education       string         `json:"education"`
+		MobileNumber    string         `json:"mobile_number"`
+		CreatedAt       time.Time      `json:"created_at"`
+		UpdatedAt       time.Time      `json:"updated_at"`
+	}
+
+	var usersWithPasswords []UserWithPassword
+	for _, user := range users {
+		usersWithPasswords = append(usersWithPasswords, UserWithPassword{
+			ID:              user.ID,
+			Name:            user.Name,
+			Username:        user.Username,
+			Email:           user.Email,
+			Password:        user.Password, // Include the hashed password
+			Role:            user.Role,
+			AvatarURL:       user.AvatarURL,
+			Bio:             user.Bio,
+			MediaGallery:    user.MediaGallery,
+			WalletBalance:   user.WalletBalance,
+			FollowerCount:   user.FollowerCount,
+			InstagramHandle: user.InstagramHandle,
+			Verified:        user.Verified,
+			Age:             user.Age,
+			Gender:          string(user.Gender),
+			Location:        user.Location,
+			Height:          user.Height,
+			Work:            user.Work,
+			Education:       user.Education,
+			MobileNumber:    user.MobileNumber,
+			CreatedAt:       user.CreatedAt,
+			UpdatedAt:       user.UpdatedAt,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"users": usersWithPasswords,
+		"count": len(usersWithPasswords),
+	})
 }
