@@ -309,28 +309,41 @@ func oldLogin(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("Login request validation error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and password are required"})
 		return
 	}
 
+	log.Printf("Attempting login for email: %s", req.Email)
+
 	var user models.User
 	if err := database.DB.Where("email = ?", req.Email).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
+			log.Printf("User not found for email: %s", req.Email)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		log.Printf("Database error during user lookup: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error occurred"})
 		return
 	}
 
 	// Compare password with hashed password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		log.Printf("Password mismatch for user: %s", req.Email)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
 	// Generate token
-	token := generateToken(user.ID, user.Role)
+	token, err := generateToken(user.ID, user.Role)
+	if err != nil {
+		log.Printf("Token generation error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate authentication token"})
+		return
+	}
+
+	log.Printf("Successful login for user: %s", req.Email)
 
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
@@ -357,10 +370,10 @@ func generateUUID() string {
 }
 
 // Generate a proper JWT token
-func generateToken(userID string, role models.UserRole) string {
+func generateToken(userID string, role models.UserRole) (string, error) {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		panic("JWT_SECRET environment variable is not set")
+		return "", fmt.Errorf("JWT_SECRET environment variable is not set")
 	}
 
 	// Trim any whitespace from the user ID
@@ -380,8 +393,8 @@ func generateToken(userID string, role models.UserRole) string {
 	// Generate encoded token
 	tokenString, err := token.SignedString([]byte(jwtSecret))
 	if err != nil {
-		panic("Failed to generate token: " + err.Error())
+		return "", fmt.Errorf("failed to generate token: %v", err)
 	}
 
-	return tokenString
+	return tokenString, nil
 }
