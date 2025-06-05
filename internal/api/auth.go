@@ -27,15 +27,15 @@ import (
 func RegisterAuthRoutes(r *gin.RouterGroup) {
 	auth := r.Group("/auth")
 	{
-		auth.POST("/register", Register)
-		auth.POST("/login", Login)
-		auth.POST("/oldLogin", OldLogin)
-		auth.POST("/google-auth", GoogleAuth)
-		auth.POST("/check-mobile", CheckMobileNumber)
+		auth.POST("/register", register)
+		auth.POST("/login", login)
+		auth.POST("/oldLogin", oldLogin)
+		auth.POST("/google-auth", googleAuth)
+		auth.POST("/check-mobile", checkMobileNumber)
 	}
 }
 
-func Register(c *gin.Context) {
+func register(c *gin.Context) {
 	var req schemas.UserCreate
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -120,7 +120,7 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, response)
 }
 
-func Login(c *gin.Context) {
+func login(c *gin.Context) {
 	var req struct {
 		MobileNumber string `json:"mobile_number" binding:"required"`
 	}
@@ -165,7 +165,7 @@ func Login(c *gin.Context) {
 	})
 }
 
-func GoogleAuth(c *gin.Context) {
+func googleAuth(c *gin.Context) {
 	var req struct {
 		IDToken string `json:"id_token" binding:"required"`
 	}
@@ -272,7 +272,7 @@ func GoogleAuth(c *gin.Context) {
 	})
 }
 
-func CheckMobileNumber(c *gin.Context) {
+func checkMobileNumber(c *gin.Context) {
 	var req struct {
 		MobileNumber string `json:"mobile_number" binding:"required"`
 	}
@@ -302,7 +302,7 @@ func CheckMobileNumber(c *gin.Context) {
 	})
 }
 
-func OldLogin(c *gin.Context) {
+func oldLogin(c *gin.Context) {
 	var req struct {
 		Email    string `json:"email" binding:"required"`
 		Password string `json:"password" binding:"required"`

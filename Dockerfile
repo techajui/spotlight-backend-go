@@ -12,8 +12,8 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build the application with no caching
-RUN --no-cache CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
 
 # Final stage
 FROM alpine:latest
