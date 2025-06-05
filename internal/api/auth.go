@@ -348,7 +348,7 @@ func oldLogin(c *gin.Context) {
 	
 	log.Printf("User found in database: %+v", user)
 	log.Printf("Stored password hash: %s", user.Password)
-	log.Printf("Attempting to compare password hash with provided password")
+	log.Printf("Attempting to compare password hash with provided password: %s", req.Password)
 
 	// Compare password with hashed password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
