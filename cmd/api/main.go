@@ -54,11 +54,11 @@ func main() {
 		// Auth routes (public)
 		auth := v1.Group("/auth")
 		{
-			auth.POST("/register", api.register)
-			auth.POST("/login", api.login)
-			auth.POST("/oldLogin", api.oldLogin)
-			auth.POST("/google-auth", api.googleAuth)
-			auth.POST("/check-mobile", api.checkMobileNumber)
+			auth.POST("/register", api.Register)
+			auth.POST("/login", api.Login)
+			auth.POST("/oldLogin", api.OldLogin)
+			auth.POST("/google-auth", api.GoogleAuth)
+			auth.POST("/check-mobile", api.CheckMobileNumber)
 		}
 
 		// Protected routes
