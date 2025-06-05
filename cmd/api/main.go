@@ -31,7 +31,7 @@ func main() {
 
 	router := gin.Default()
 
-	// Apply CORS middleware
+	// Apply CORS middleware first
 	router.Use(middleware.CORSMiddleware())
 
 	// Security & Rate limiting — skip in local dev
