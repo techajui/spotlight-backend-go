@@ -31,13 +31,8 @@ func main() {
 
 	router := gin.Default()
 
-	// ✅ Apply CORS early — critical for OPTIONS requests
+	// Apply CORS middleware
 	router.Use(middleware.CORSMiddleware())
-
-	// Optional: manually handle all OPTIONS requests (needed if not using gin-contrib/cors preflight)
-	router.OPTIONS("/*path", func(c *gin.Context) {
-		c.AbortWithStatus(204)
-	})
 
 	// Security & Rate limiting — skip in local dev
 	if os.Getenv("LOCAL_DEV") != "true" {
@@ -56,8 +51,17 @@ func main() {
 	// API v1
 	v1 := router.Group("/api/v1")
 	{
-		api.RegisterAuthRoutes(v1)
+		// Auth routes (public)
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/register", api.Register)
+			auth.POST("/login", api.Login)
+			auth.POST("/oldLogin", api.OldLogin)
+			auth.POST("/google-auth", api.GoogleAuth)
+			auth.POST("/check-mobile", api.CheckMobileNumber)
+		}
 
+		// Protected routes
 		protected := v1.Group("")
 		protected.Use(middleware.AuthMiddleware())
 		{
